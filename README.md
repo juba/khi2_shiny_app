@@ -1,0 +1,1 @@
+Application Shiny de manipulation et de simulations pour l'apprentissage du test du Khi2.
