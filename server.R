@@ -28,15 +28,15 @@ function(input, output, session) {
   output$biais_tabEff <- renderTable({
     if (input$biais_rerun==0) return()
     out <- biais_tab()
-    out
-  })
+    as.data.frame.matrix(out)
+  }, rownames = TRUE)
   
   output$biais_tabPourc <- renderTable({
     if (input$biais_rerun==0) return()
     out <- prop.table(biais_tab())*100
     out[] <- sprintf(out, fmt = "%.1f %%")
-    out
-  },digits=1)
+    as.data.frame.matrix(out)
+  }, rownames = TRUE, digits = 1)
 
 
   ## INDÉPEDANCE ---------------------------------------------------------
@@ -63,70 +63,70 @@ function(input, output, session) {
     tab <- indep_tab()
     tab <- cbind(tab, Ensemble=apply(tab,1,sum))
     tab <- rbind(tab, Ensemble=apply(tab,2,sum))   
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
   
   output$indep_tril <- renderTable({
     tab <- indep_tab()
     tmp <- data.frame(n=apply(tab, 1, sum))
     rownames(tmp) <- rownames(tab)
     tmp <- cbind(tmp, `%`=paste(round(tmp$n/sum(tmp$n)*100,1),"%"))
-    tmp
-  })
+    as.data.frame.matrix(tmp)
+  }, rownames = TRUE)
  
   output$indep_tric <- renderTable({
     tab <- indep_tab()
     tmp <- data.frame(n=apply(tab, 2, sum))
     rownames(tmp) <- colnames(tab)
     tmp <- cbind(tmp, `%`=paste(round(tmp$n/sum(tmp$n)*100,1),"%"))
-    tmp
-  })
+    as.data.frame.matrix(tmp)
+  }, rownames = TRUE)
 
   output$indep_tabopl <- renderTable({
     tab <- indep_tab()
     tab <- lprop(tab)    
     tab[] <- paste(round(tab[],1),"%")
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
   
   output$indep_tabopc <- renderTable({
     tab <- indep_tab()
     tab <- cprop(tab)    
     tab[] <- paste(round(tab[],1),"%")
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
   
    output$indep_tabPourc <- renderTable({
     tab <- indep_tab()
     tab <- chisq.test(tab)$expected
     tab <- prop(tab)
     tab[] <- paste(round(tab[],1),"%")
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
   
   output$indep_tabEff <- renderTable({
     tab <- indep_tab()
     tab <- chisq.test(tab)$expected
     tab <- cbind(tab, Ensemble=apply(tab,1,sum))
     tab <- rbind(tab, Ensemble=apply(tab,2,sum))
-    round(tab, 1)
-  },digits=1)
+    as.data.frame.matrix(round(tab, 1))
+  }, rownames = TRUE, digits=1)
   
   output$indep_tabtpl <- renderTable({
     tab <- indep_tab()
     tab <- chisq.test(tab)$expected
     tab <- lprop(tab)    
     tab[] <- paste(round(tab[],1),"%")
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
 
   output$indep_tabtpc <- renderTable({
     tab <- indep_tab()
     tab <- chisq.test(tab)$expected
     tab <- cprop(tab)    
     tab[] <- paste(round(tab[],1),"%")
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
   
 
 ## KHI2 D'UN TABLEAU ARBITRAIRE --------------------------------------
@@ -148,52 +148,54 @@ function(input, output, session) {
   
   output$khid_obseff <- renderTable({
     tab <- khid_tab()
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
   
   output$khid_obspourc <- renderTable({
     tab <- khid_tab()
     tab <- prop(tab)
     tab[] <- paste(round(tab[],1),"%")
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
 
   output$khid_obspl <- renderTable({
     tab <- khid_tab()
     tab <- rprop(tab)
     tab[] <- paste(round(tab[],1),"%")
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
 
   output$khid_obspc <- renderTable({
     tab <- khid_tab()
     tab <- cprop(tab)
     tab[] <- paste(round(tab[],1),"%")
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
 
   output$khid_theff <- renderTable({
     tab <- khid_tab()
-    round(chisq.test(tab)$expected,1)
-  },digits=1)
+    tab <- round(chisq.test(tab)$expected,1)
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE, digits=1)
 
   output$khid_thpourc <- renderTable({
     tab <- khid_tab()
     tab <- prop(chisq.test(tab)$expected)
     tab[] <- paste(round(tab[],1),"%")
-    tab
-  })
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE)
 
   output$khid_ecarts <- renderTable({
     tab <- khid_tab()
-    round(tab - chisq.test(tab)$expected,1)
-  }, digits=1)
+    tab <- round(tab - chisq.test(tab)$expected,1)
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE, digits=1)
   
   output$khid_partiels <- renderTable({
     tab <- khid_tab()
     exp <- chisq.test(tab)$expected
-    (tab-exp)^2 / exp
-  })
+    as.data.frame.matrix((tab-exp)^2 / exp)
+  }, rownames = TRUE)
   
   output$khid_val <- renderText({
     tab <- khid_tab()
@@ -230,17 +232,18 @@ function(input, output, session) {
   
   output$sim1_thq <- renderTable({
     tab <- sim1_tab()
-    round(chisq.test(tab)$expected,1)
-  }, digits=1)  
+    tab <- round(chisq.test(tab)$expected,1)
+    as.data.frame.matrix(tab)
+  }, rownames = TRUE, digits=1)  
 
-  output$sim1_obs1 <- renderTable({ sim1_tabalea()[[1]]})
-  output$sim1_khid1 <- renderText({ paste("χ² =", round(chisq.test(sim1_tabalea()[[1]])$statistic,2))})
-  output$sim1_obs2 <- renderTable({ sim1_tabalea()[[2]]})
-  output$sim1_khid2 <- renderText({ paste("χ² =", round(chisq.test(sim1_tabalea()[[2]])$statistic,2))})
-  output$sim1_obs3 <- renderTable({ sim1_tabalea()[[3]]})
-  output$sim1_khid3 <- renderText({ paste("χ² =", round(chisq.test(sim1_tabalea()[[3]])$statistic,2))})
-  output$sim1_obs4 <- renderTable({ sim1_tabalea()[[4]]})
-  output$sim1_khid4 <- renderText({ paste("χ² =", round(chisq.test(sim1_tabalea()[[4]])$statistic,2))})
+  output$sim1_obs1 <- renderTable({as.data.frame.matrix(sim1_tabalea()[[1]])}, rownames = TRUE)
+  output$sim1_khid1 <- renderText({paste("χ² =", round(chisq.test(sim1_tabalea()[[1]])$statistic,2))})
+  output$sim1_obs2 <- renderTable({as.data.frame.matrix(sim1_tabalea()[[2]])}, rownames = TRUE)
+  output$sim1_khid2 <- renderText({paste("χ² =", round(chisq.test(sim1_tabalea()[[2]])$statistic,2))})
+  output$sim1_obs3 <- renderTable({as.data.frame.matrix(sim1_tabalea()[[3]])}, rownames = TRUE)
+  output$sim1_khid3 <- renderText({paste("χ² =", round(chisq.test(sim1_tabalea()[[3]])$statistic,2))})
+  output$sim1_obs4 <- renderTable({as.data.frame.matrix(sim1_tabalea()[[4]])}, rownames = TRUE)
+  output$sim1_khid4 <- renderText({paste("χ² =", round(chisq.test(sim1_tabalea()[[4]])$statistic,2))})
   
   sim1_val <- reactive({
     if (input$sim1_nb>100000) return()
@@ -313,7 +316,7 @@ function(input, output, session) {
 ## EXERCICES D'APPLICATION SUR HDV 2003 ------------------------------------
   
   pq_tab <- reactive({
-      if (input$pq_varl=="---" || input$pq_varc=="---") return()
+      if (input$pq_varl=="---" || input$pq_varc=="---") return(NULL)
       tmp <- d
       if (input$pq_subset=="Hommes seulement") tmp <- d[d$sexe=="Homme",]
       if (input$pq_subset=="Femmes seulement") tmp <- d[d$sexe=="Femme",]
@@ -321,27 +324,30 @@ function(input, output, session) {
   })
 
   output$pq_eff <- renderTable({
-      pq_tab()
-  })
+    tab <- pq_tab()
+    if (!is.null(tab)) tab <- as.data.frame.matrix(tab)
+    tab
+  }, rownames = TRUE)
 
   output$pq_rprop <- renderTable({
       if (input$pq_varl=="---" || input$pq_varc=="---") return()
       tab <- rprop(pq_tab())
       tab[] <- paste(round(tab[],1),"%")
-      tab
-  })
+      as.data.frame.matrix(tab)
+  }, rownames = TRUE)
 
   output$pq_cprop <- renderTable({
       if (input$pq_varl=="---" || input$pq_varc=="---") return()
       tab <- cprop(pq_tab())
       tab[] <- paste(round(tab[],1),"%")
-      tab
-  })
+      as.data.frame.matrix(tab)
+  }, rownames = TRUE)
 
   output$pq_resid <- renderTable({
       if (input$pq_varl=="---" || input$pq_varc=="---") return()
-      residus(pq_tab())
-  })
+      tab <- residus(pq_tab())
+      as.data.frame.matrix(tab)
+  }, rownames = TRUE)
 
   output$pq_mosaic <- renderPlot({
       if (input$pq_varl=="---" || input$pq_varc=="---") return()
