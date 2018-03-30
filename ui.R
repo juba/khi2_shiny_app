@@ -1,7 +1,7 @@
 hdv_description <- list(
-  tags$p("L'enquete Histoire de vie a été réalisée par l'INSEE en 2003. Elle comprenait à la fois un questionnaire sur des thèmes assez larges (activité, gouts, engagements, handicap, discriminations) et une parti biographique."),
-  tags$p("Plus d'informations et téléchargement des données disponibles ", tags$a(href="http://www.insee.fr/fr/themes/detail.asp?ref_id=fd-hdv03", "sur le site de l'INSEE.")),
-  tags$p("Ici on travaille sur un extrait de l'enquete, comprenant ", nrow(d), "individus et ", ncol(d), "variables."))
+  tags$p("L'enquête Histoire de vie a été réalisée par l'INSEE et l'INED en 2003. Elle comprend à la fois un questionnaire sur des thèmes assez larges (activité, goûts, engagements, handicap, discriminations) et une parti biographique."),
+  tags$p("Plus d'informations et téléchargement des données sont disponibles ", tags$a(href="https://www.insee.fr/fr/statistiques/2532244", "sur le site de l'INSEE.")),
+  tags$p("Ici on travaille sur un extrait de l'enquête, comprenant ", nrow(d), "individus et ", ncol(d), "variables."))
 
 hdv_listevars <- list(tags$p("Descriptif des variables : "),
                       tags$pre("
