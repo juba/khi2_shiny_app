@@ -34,6 +34,7 @@ css_string <- "
 @import url(https://fonts.googleapis.com/css?family=Open+Sans);
 @import url(https://fonts.googleapis.com/css?family=Roboto);
 * {font-family: 'Roboto', 'Open Sans', 'Helvetica', sans-serif;}
+body {padding-bottom: 6em;}
 .container-fluid {max-width: 1170px;}
 .nav-tabs {margin-bottom: 25px;}
 table td {text-align: right;}
