@@ -216,6 +216,7 @@ function(input, output, session) {
   sim1_tabalea <- reactive({
     nothing <- input$sim1_run
     tab <- sim1_tab()
+    tab <- chisq.test(tab)$expected
     nb <- nrow(tab)*ncol(tab)
     ntot <- sum(tab)
     probas <- as.vector(tab)/sum(tab)
@@ -276,18 +277,25 @@ function(input, output, session) {
     if ("Histogramme" %in% input$sim1_opts) {
       tmp <- sim1_val()
       if ("Courbe" %in% input$sim1_opts) {
-          ggplot(data=data.frame(tmp=tmp), aes(x=tmp)) +
+          g <- ggplot(data=data.frame(tmp=tmp), aes(x=tmp)) +
               geom_histogram(binwidth=1, aes(y=..density..)) + 
-              scale_x_continuous("Valeur du χ²", limits=c(0,25)) +
-              scale_y_continuous("Nombre de simulations") +
+              scale_y_continuous("Proportion de simulations") +
               geom_line(stat="function", fun=function(x) dchisq(x, df=2), col="red")
       }
       else {
-          qplot(tmp, geom="histogram", binwidth=1) + 
-              scale_x_continuous("Valeur du χ²", limits=c(0,25)) +
-              scale_y_continuous("Nombre de simulations")
+          g <- qplot(tmp, geom="histogram", binwidth=1) + 
+                  scale_y_continuous("Nombre de simulations")
       }
-      
+      if ("Comparaison" %in% input$sim1_opts) {
+          g <- g + 
+            geom_vline(xintercept = 7.06, color = "blue", linetype = 2) +
+            scale_x_continuous("Valeur du χ²", breaks = c(0,5,7.06,10,15,20), limits = c(0,20))
+      } 
+      else {
+         g <- g +
+           scale_x_continuous("Valeur du χ²", limits = c(0,20))           
+      }
+      g
     }
     else {
       plot.new()

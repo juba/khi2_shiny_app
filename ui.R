@@ -31,8 +31,8 @@ hdv_listevars <- list(tags$p("Descriptif des variables : "),
 | freres.soeurs| Nombre de (demi-)frères et (demi-)soeurs      |"))
 
 css_string <- "
-@import url(http://fonts.googleapis.com/css?family=Open+Sans);
-@import url(http://fonts.googleapis.com/css?family=Roboto);
+@import url(https://fonts.googleapis.com/css?family=Open+Sans);
+@import url(https://fonts.googleapis.com/css?family=Roboto);
 * {font-family: 'Roboto', 'Open Sans', 'Helvetica', sans-serif;}
 .container-fluid {max-width: 1170px;}
 .nav-tabs {margin-bottom: 25px;}
@@ -113,32 +113,32 @@ tags$div(class="form-inline",
                       )))),
     fluidRow(
       column(12,
-             tabsetPanel(
+             tabsetPanel(selected = "Tableaux théoriques",
                tabPanel("Tableau observé",
                         fluidRow(
                           column(12,
-                                 tags$p("Effectifs :"), 
+                                 tags$h4("Effectifs"), 
                                  tableOutput("indep_tabobs"))),
                         fluidRow(
                           column(6,
-                                 tags$p("Pourcentages ligne sur les effectifs observés :"),
+                                 tags$h4("Pourcentages ligne"),
                                  tableOutput("indep_tabopl")),
                           column(6,
-                                 tags$p("Pourcentages colonne sur les effectifs observés :"),
+                                 tags$h4("Pourcentages colonne"),
                                  tableOutput("indep_tabopc"))
                         )),
                tabPanel("Tableaux théoriques",
                         show_alert(HTML("Ces tableaux sont les tableaux théoriques calculés <em>sous l'hypothèse d'indépendance des lignes et des colonnes</em>.")),
                         fluidRow(
-                          column(6, tags$p("Tableau des effectifs théoriques :"),
+                          column(6, tags$h4("Effectifs théoriques"),
                                  tableOutput("indep_tabEff")),
-                          column(6, tags$p("Tableau des pourcentages théoriques :"),
+                          column(6, tags$h4("Pourcentages théoriques"),
                                  tableOutput("indep_tabPourc"))
                         ),
                         fluidRow(
-                          column(6, tags$p("Pourcentages ligne sur les effectifs théoriques :"),
+                          column(6, tags$h4("Pourcentages ligne"),
                                  tableOutput("indep_tabtpl")),
-                          column(6, tags$p("Pourcentages colonne sur les effectifs théoriques :"),
+                          column(6, tags$h4("Pourcentages colonne"),
                                  tableOutput("indep_tabtpc"))
                         )))))
 )
@@ -171,28 +171,28 @@ ui_khid <- list(fluidRow(headerPanel("Calcul du χ² d'un tableau"),
     ))
   ),
   fluidRow(column(12,
-         tabsetPanel(
+         tabsetPanel(selected = "Tableau théorique et écarts",
            tabPanel("Tableau observé",
                     fluidRow(
-                      column(6, tags$p("Effectifs observés :"),
+                      column(6, tags$h4("Effectifs"),
                                 tableOutput("khid_obseff")),
-                      column(6, tags$p("Pourcentages observés :"),
+                      column(6, tags$h4("Pourcentages"),
                                 tableOutput("khid_obspourc"))),
                     fluidRow(
-                      column(6, tags$p("Pourcentages ligne :"),
+                      column(6, tags$h4("Pourcentages ligne"),
                              tableOutput("khid_obspl")),
-                      column(6, tags$p("Pourcentages colonne :"),
+                      column(6, tags$h4("Pourcentages colonne"),
                              tableOutput("khid_obspc")))),
            tabPanel("Tableau théorique et écarts",
                     fluidRow(
-                      column(6, tags$p("Effectifs théoriques sous l'hypothèse d'indépendance :"),
+                      column(6, tags$h4("Effectifs théoriques"),
                                 tableOutput("khid_theff")),
-                      column(6, tags$p("Pourcentages théoriques sous l'hypothèse d'indépendance :"),
+                      column(6, tags$h4("Pourcentages théoriques"),
                                 tableOutput("khid_thpourc"))),
                     fluidRow(
-                      column(6, tags$p("Écarts observés - théoriques :"),
+                      column(6, tags$h4("Écarts observés - théoriques"),
                                 tableOutput("khid_ecarts")),
-                      column(6, tags$p("χ² partiels :"),
+                      column(6, tags$h4("χ² partiels"),
                                 tableOutput("khid_partiels"))))
            )))
  )
