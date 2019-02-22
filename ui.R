@@ -48,6 +48,49 @@ span.sim1_tab {width: 4em; display:inline-block; text-align: right;}
 "
 
 
+## PROPORTION ----------------------------------------------------------
+
+ui_prop <- fluidRow(
+  headerPanel("Simulation d'une proportion"),
+  column(3,
+    wellPanel(
+      sliderInput("prop_value", 
+        "Proportion de femmes dans la population",
+        min = 0, max = 100, step = 1, value = 50, round = TRUE),
+      numericInput("prop_size",
+        "Taille de l'échantillon",
+        min = 2, max = 10000, value = 200),
+      numericInput("prop_sim", 
+        "Nombre de tirages",
+        min = 1, max = 1000, value = 1),
+      conditionalPanel("input.prop_sim > 10",
+        checkboxInput("prop_show_plot", "Afficher l'histogramme", value = FALSE)),
+      conditionalPanel("input.prop_sim > 10 &input.prop_show_plot",
+        numericInput("prop_ech", "Pourcentage obtenu dans notre échantillon",
+          min = 0, max = 100, step = 1, value = NULL)),
+      actionButton("prop_rerun", "Générer", class = "btn btn-success", icon = icon("refresh"))
+    )),
+  column(8,
+    conditionalPanel("input.prop_sim <= 3",
+      uiOutput("prop_sim3")
+    ),
+    conditionalPanel("input.prop_sim > 3 & input.prop_sim <=10",
+      uiOutput("prop_sim10")
+    ),
+    conditionalPanel("input.prop_sim > 10",
+      conditionalPanel("input.prop_sim <= 100 | !input.prop_show_plot",
+        uiOutput("prop_sim")),
+      conditionalPanel("input.prop_show_plot",
+        h3("Histogramme des valeurs obtenues"),
+        plotOutput("prop_plot"),
+        conditionalPanel("input.prop_ech !== null",
+          uiOutput("prop_p")
+        )
+      )
+    )
+  )
+)
+
 ## BIAIS ---------------------------------------------------------------
 
 row.names <- c("Cerastoculteur","Venericulteur","Pectiniculteur","Halioticulteur")
@@ -308,8 +351,9 @@ ui_pq <- fluidRow(
 ))
 
 
-navbarPage("Formation χ²",
+navbarPage("Formation inférence",
             header=tags$head(tags$style(HTML(css_string))),
+            tabPanel("Proportion", ui_prop),
             tabPanel("Biais", ui_biais),
             tabPanel("Indépendance", ui_indep),
             tabPanel("χ² d'un tableau", ui_khid),

@@ -1,9 +1,120 @@
 library("shiny")
 library("questionr")
 library("ggplot2")
+library("purrr")
+library("tibble")
 
 function(input, output, session) {
   
+  
+  
+  ## PROPORTION ----------------------------------------------------
+  
+  ## Fonction de tirage au sort pour proportions
+  prop_tirage <- function(size, prob_value, values = TRUE) {
+    probs <- c(1 - (prob_value / 100), prob_value / 100)
+    tirage <- sample(c("H", "F"), size = input$prop_size, replace =TRUE, prob = probs)
+    tab <- table(tirage)
+    if (!("F" %in% names(tab))) {
+      nb <- 0
+      pourc <- 0
+    }
+    else {
+      nb <- tab[["F"]]
+      pourc <- round(nb / size * 100, 1)
+    }
+    if (values) return(list(tirage = tirage, pourc = pourc, nb = nb))
+    return(pourc)
+  }
+  
+  ## Simulation de proportions entre 1 et 3 répétitions
+  output$prop_sim3 <- renderUI({
+    input$prop_rerun
+    if (is.na(input$prop_sim)) return(NULL)
+    if (input$prop_sim > 3) return(NULL)
+    out <- HTML("")
+    for (i in 1:input$prop_sim) {
+      res <- prop_tirage(input$prop_size, input$prop_value, values = TRUE)
+      max_display_values <- 500
+      values <- paste0(head(res$tirage, max_display_values), collapse = ", ")
+      if (input$prop_size > max_display_values) values <- paste0(values, "...")
+      out <- paste0(out, HTML("<h3>Tirage ", i, "</h3>"))
+      out <- paste0(out, HTML("<textarea style='width: 100%; height: 7em; color: #888;'>", values, "</textarea><br>"))
+      out <- paste0(out, HTML("Nombre de femmes : <strong>", res$nb, "</strong><br>"))
+      out <- paste0(out, HTML("Pourcentage de femmes : <strong>", res$pourc, "%</strong>"))
+    }
+    HTML(out)
+  })
+
+  tirages <- reactive({
+    input$prop_rerun
+    replicate(input$prop_sim, prop_tirage(input$prop_size, input$prop_value, values = FALSE))
+  })
+  
+  ## Simulation de proportions entre 4 et 10 répétitions
+  output$prop_sim10 <- renderUI({
+    input$prop_rerun
+    if (input$prop_sim <= 3 || input$prop_sim > 10) return(NULL)
+    out <- HTML("")
+    pourcentages <- tirages()
+    pourcentages <- paste0(format(pourcentages, digits=3), collapse = "%</li><li>")
+    out <- paste0(out, HTML("<h3>Tirages</h3>"))
+    out <- paste0(out, HTML("Pourcentage de femmes obtenus : <ul><li>", pourcentages, "%</li></ul>"))
+    HTML(out)
+  })
+  
+  ## Simulation de proportions pour plus de 10 répétitions
+  output$prop_sim <- renderUI({
+    input$prop_rerun
+    if (input$prop_sim <= 10) return(NULL)
+    out <- HTML("")
+    pourcentages <- tirages()
+    max_display_values <- 300
+    pourcentages <- head(pourcentages, max_display_values)
+    pourcentages <- paste0(format(pourcentages, digits=3), collapse = ", ")
+    if (input$prop_sim > max_display_values) pourcentages <- paste0(pourcentages, "...")
+    out <- paste0(out, HTML("<h3>Tirages</h3>"))
+    out <- paste0(out, HTML("Pourcentage de femmes obtenus :<br>"))
+    out <- paste0(out, "<textarea style='width: 100%; height: 7em; color: #888;'>", pourcentages, "</textarea><br>")
+    HTML(out)
+  })
+  
+  ## Histogramme des proportions obtenues
+  output$prop_plot <- renderPlot({
+    pourcentages <- tibble(pourc = tirages())
+    pourc_range <- range(pourcentages)
+    pourc_range[1] <- pourc_range[1] - 1
+    pourc_range[2] <- pourc_range[2] + 1
+    g <- ggplot(pourcentages) +
+          geom_histogram(aes(x=pourc), binwidth = 1) +
+          scale_x_continuous("Pourcentage de femmes", limits = c(0,100)) +
+          scale_y_continuous("Nombre de tirages")
+    if(!is.na(input$prop_ech) && input$prop_ech >= 0 && input$prop_ech <= 100) {
+      gap <- abs(input$prop_value - input$prop_ech)
+      x1 <- input$prop_value - gap
+      x2 <- input$prop_value + gap
+      g <- g +
+        geom_vline(xintercept = c(x1, x2), color = "red", size = 1, linetype = 2) +
+        annotation_raster(rgb(1,0,0,0.2), xmin = -Inf, xmax = x1, ymin = -Inf, ymax = Inf) +
+        annotation_raster(rgb(1,0,0,0.2), xmin = x2, xmax = Inf, ymin = -Inf, ymax = Inf)
+    }
+    g
+  })
+  
+  ## Comparaison tirages et échantillon
+  output$prop_p <- renderUI({
+    gap <- abs(input$prop_value - input$prop_ech)
+    x1 <- input$prop_value - gap
+    x2 <- input$prop_value + gap
+    nb <- sum(tirages() <= x1 | tirages() >= x2)
+    pourc <- round(nb / input$prop_sim * 100, 1)
+    p_test <- prop.test(input$prop_ech / 100 * input$prop_size, input$prop_size, input$prop_value / 100)$p.value
+    p_test <- signif(p_test, 3)
+    out <- paste0("Nombre de tirages pour lesquels le pourcentage de femmes est inférieur à ", x1, " ou supérieur à ", x2, " : <strong>", nb, "</strong><br>")
+    out <- paste0(out, "Soit en pourcentage des tirages : <strong>", pourc, "%</strong><br>")
+    out <- paste0(out, "Résultat d'un test de proportion : <strong>p = ", p_test, "</strong><br>")
+    HTML(out)
+  })
   
   ## BIAIS ---------------------------------------------------------
   
