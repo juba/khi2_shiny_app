@@ -44,14 +44,46 @@ h1 { margin-bottom: 1em; font-size: 2.2em;}
 .form-inline .form-control {width: 7em !important;}
 span.khid_tab, span.indep_tab {width: 7em; display:inline-block; text-align: right;}
 span.sim1_tab {width: 4em; display:inline-block; text-align: right;}
+.echantillon {
+  background-color: #F0F0F0;
+  padding: 1em;
+  border-radius: 1em;
+  width: 100%; height: 15em;
+  overflow-y: scroll;
+}
+.echantillon-small {
+  height: 11em;
+}
 
 "
 
 
-## PROPORTION ----------------------------------------------------------
+
+## PROPORTION - BIAIS ----------------------------------------------------------
+
+ui_prop_biais <- fluidRow(
+  headerPanel("Estimation d'une proportion - Biais d'échantillonnage"),
+  column(3,
+    wellPanel(
+      sliderInput("prop_biais_value", 
+        "Proportion de femmes dans la population",
+        min = 0, max = 100, step = 1, value = 50, round = TRUE),
+      numericInput("prop_biais_size",
+        "Taille de l'échantillon",
+        min = 2, max = 10000, value = 200),
+      actionButton("prop_biais_rerun", "Générer", class = "btn btn-success", icon = icon("refresh"))
+    )
+  ),
+  column(8,
+    uiOutput("prop_biais_sim")  
+  )
+  
+)
+
+## PROPORTION - SIMULATIONS ----------------------------------------------------
 
 ui_prop <- fluidRow(
-  headerPanel("Simulation d'une proportion"),
+  headerPanel("Estimation d'une proportion - Simulations"),
   column(3,
     wellPanel(
       sliderInput("prop_value", 
@@ -66,32 +98,34 @@ ui_prop <- fluidRow(
       conditionalPanel("input.prop_sim > 10",
         checkboxInput("prop_show_plot", "Afficher l'histogramme", value = FALSE)),
       conditionalPanel("input.prop_sim > 10 &input.prop_show_plot",
+        checkboxInput("prop_fix_x", "Fixer l'axe horizontal à 0-100", value = FALSE),
         numericInput("prop_ech", "Pourcentage obtenu dans notre échantillon",
-          min = 0, max = 100, step = 1, value = NULL)),
+          min = 0, max = 100, step = 1, value = 53),
+        checkboxInput("prop_show_zones", "Surligner les valeurs plus extrêmes", value = FALSE),
+        checkboxInput("prop_show_test", "Afficher test", value = FALSE),
+        checkboxInput("prop_show_curve", "Afficher courbe", value = FALSE)),  
       actionButton("prop_rerun", "Générer", class = "btn btn-success", icon = icon("refresh"))
     )),
   column(8,
     conditionalPanel("input.prop_sim <= 3",
       uiOutput("prop_sim3")
     ),
-    conditionalPanel("input.prop_sim > 3 & input.prop_sim <=10",
-      uiOutput("prop_sim10")
-    ),
-    conditionalPanel("input.prop_sim > 10",
+    conditionalPanel("input.prop_sim > 3",
       conditionalPanel("input.prop_sim <= 100 | !input.prop_show_plot",
         uiOutput("prop_sim")),
       conditionalPanel("input.prop_show_plot",
-        h3("Histogramme des valeurs obtenues"),
+        h4("Histogramme des valeurs obtenues"),
         plotOutput("prop_plot"),
-        conditionalPanel("input.prop_ech !== null",
-          uiOutput("prop_p")
-        )
+        conditionalPanel("input.prop_show_zones",
+          uiOutput("prop_extr_values")),
+        conditionalPanel("input.prop_show_test",
+          uiOutput("prop_p"))
       )
     )
   )
 )
 
-## BIAIS ---------------------------------------------------------------
+## KHI2 - BIAIS ----------------------------------------------------------
 
 row.names <- c("Cerastoculteur","Venericulteur","Pectiniculteur","Halioticulteur")
 col.names <- c("Potjevleesch","Kouign-amann", "Waterzooi")
@@ -106,7 +140,7 @@ show_alert <- function(texte) {
 } 
 
 ui_biais <- fluidRow(
-    headerPanel("Biais d'échantillonnage"),
+    headerPanel("χ² - Biais d'échantillonnage"),
     show_alert("Cette page simule la réalisation d'une enquête par questionnaire. On interroge une population au sujet de deux variables parfaitement indépendantes pour visualiser l'effet du biais d'échantillonnage."),
     column(3,
            wellPanel(
@@ -126,126 +160,10 @@ ui_biais <- fluidRow(
          )
 )
 
-
-## INDÉPEDANCE ---------------------------------------------------------
-
-ui_indep <- list(fluidRow(headerPanel(HTML("Tableau théorique <small>sous l'hypothèse d'indépendance</small>")),
-    show_alert("Cette page permet de saisir librement les valeurs d'un tableau observé et de calculer les tableaux théoriques sous l'hypothèse d'indépendance correspondants.")),
-    wellPanel(
-      fluidRow(column(12,
-                      tags$p(HTML("<strong>Tableau observé :</strong>")),
-tags$div(class="form-inline",           
-                               tags$span(class="indep_tab", ""),
-                               tags$span(class="indep_tab", "Marrons"),
-                               tags$span(class="indep_tab", "Bleus"),
-                               tags$span(class="indep_tab", "Verts"),
-                               tags$br(),
-                               tags$span(class="indep_tab", "Bruns"),
-                               numericInput("indep_v1", "", value=10, min=0, max=100000),
-                               numericInput("indep_v2", "", value=10, min=0, max=100000),
-                               numericInput("indep_v3", "", value=10, min=0, max=100000),
-                               tags$br(),
-                               tags$span(class="indep_tab", "Blonds"),
-                               numericInput("indep_v4", "", value=10, min=0, max=100000),
-                               numericInput("indep_v5", "", value=10, min=0, max=100000),
-                               numericInput("indep_v6", "", value=10, min=0, max=100000),
-                               tags$br(),
-                               tags$span(class="indep_tab", "Roux"),
-                               numericInput("indep_v7", "", value=10, min=0, max=100000),
-                               numericInput("indep_v8", "", value=10, min=0, max=100000),
-                               numericInput("indep_v9", "", value=10, min=0, max=100000)
-                      )))),
-    fluidRow(
-      column(12,
-             tabsetPanel(selected = "Tableaux théoriques",
-               tabPanel("Tableau observé",
-                        fluidRow(
-                          column(12,
-                                 tags$h4("Effectifs"), 
-                                 tableOutput("indep_tabobs"))),
-                        fluidRow(
-                          column(6,
-                                 tags$h4("Pourcentages ligne"),
-                                 tableOutput("indep_tabopl")),
-                          column(6,
-                                 tags$h4("Pourcentages colonne"),
-                                 tableOutput("indep_tabopc"))
-                        )),
-               tabPanel("Tableaux théoriques",
-                        show_alert(HTML("Ces tableaux sont les tableaux théoriques calculés <em>sous l'hypothèse d'indépendance des lignes et des colonnes</em>.")),
-                        fluidRow(
-                          column(6, tags$h4("Effectifs théoriques"),
-                                 tableOutput("indep_tabEff")),
-                          column(6, tags$h4("Pourcentages théoriques"),
-                                 tableOutput("indep_tabPourc"))
-                        ),
-                        fluidRow(
-                          column(6, tags$h4("Pourcentages ligne"),
-                                 tableOutput("indep_tabtpl")),
-                          column(6, tags$h4("Pourcentages colonne"),
-                                 tableOutput("indep_tabtpc"))
-                        )))))
-)
-    
-## KHI2 D'UN TABLEAU ARBITRAIRE --------------------------------------
-
-ui_khid <- list(fluidRow(headerPanel("Calcul du χ² d'un tableau"),
-  show_alert("Cette page permet de saisir librement les valeurs d'un tableau observé et de calculer la valeur de la statistique du χ² correspondante.")),
-  wellPanel(
-    fluidRow(column(7,
-           tags$p(HTML("<strong>Tableau observé :</strong>")),
-           tags$div(class="form-inline",           
-            tags$span(class="khid_tab", ""),
-            tags$span(class="khid_tab", "Oui"),
-            tags$span(class="khid_tab", "Non"),
-            tags$span(class="khid_tab", "NSP"),
-            tags$br(),
-            tags$span(class="khid_tab", "Homme"),
-            numericInput("khid_v1", "", value=10, min=0, max=100000),
-            numericInput("khid_v2", "", value=10, min=0, max=100000),
-            numericInput("khid_v3", "", value=10, min=0, max=100000),
-            tags$br(),
-            tags$span(class="khid_tab", "Femme"),
-            numericInput("khid_v4", "", value=10, min=0, max=100000),
-            numericInput("khid_v5", "", value=10, min=0, max=100000),
-            numericInput("khid_v6", "", value=10, min=0, max=100000)
-          )),
-    column(5,
-           tags$div(style="font-size: 4em;", textOutput("khid_val"))
-    ))
-  ),
-  fluidRow(column(12,
-         tabsetPanel(selected = "Tableau théorique et écarts",
-           tabPanel("Tableau observé",
-                    fluidRow(
-                      column(6, tags$h4("Effectifs"),
-                                tableOutput("khid_obseff")),
-                      column(6, tags$h4("Pourcentages"),
-                                tableOutput("khid_obspourc"))),
-                    fluidRow(
-                      column(6, tags$h4("Pourcentages ligne"),
-                             tableOutput("khid_obspl")),
-                      column(6, tags$h4("Pourcentages colonne"),
-                             tableOutput("khid_obspc")))),
-           tabPanel("Tableau théorique et écarts",
-                    fluidRow(
-                      column(6, tags$h4("Effectifs théoriques"),
-                                tableOutput("khid_theff")),
-                      column(6, tags$h4("Pourcentages théoriques"),
-                                tableOutput("khid_thpourc"))),
-                    fluidRow(
-                      column(6, tags$h4("Écarts observés - théoriques"),
-                                tableOutput("khid_ecarts")),
-                      column(6, tags$h4("χ² partiels"),
-                                tableOutput("khid_partiels"))))
-           )))
- )
-  
-
-## SIMULATION D'UN KHI2 SOUS HYPOTHESE D'INDEPENDANCE -------------------------------
+## KHI2 - SIMULATIONS ----------------------------------------------
 
 ui_sim1 <- list(fluidRow(
-  headerPanel(HTML("Simulation des valeurs du χ² <small>sous l'hypothèse d'indépendance</small>"))),
+  headerPanel(HTML("χ² - Simulation <small>sous l'hypothèse d'indépendance</small>"))),
   fluidRow(show_alert("Ici on part d'un tableau observé, on simule un grand nombre de tableaux équivalents sous l'hypothèse d'indépendance, et on calcule et représente la distribution des valeurs de la statistique du χ² obtenues.")),
   wellPanel(
     fluidRow(
@@ -266,8 +184,8 @@ ui_sim1 <- list(fluidRow(
          wellPanel(
            numericInput("sim1_nb", "Nombre de simulations", value=1, min=1, max=100000),
            conditionalPanel("input.sim1_nb>=100",
-              checkboxGroupInput("sim1_opts", "Options", 
-                                 choices=c("Histogramme", "Comparaison", "p-value", "Courbe"))),
+              checkboxGroupInput("sim1_opts", "Afficher", 
+                                 choices=c("Histogramme", "Valeurs plus extrêmes", "Test", "Courbe"))),
            actionButton("sim1_run", "Générer", class="btn btn-success", icon=icon("refresh"))
          )),
   column(8,
@@ -353,12 +271,11 @@ ui_pq <- fluidRow(
 
 navbarPage("Formation inférence",
             header=tags$head(tags$style(HTML(css_string))),
-            tabPanel("Proportion", ui_prop),
-            tabPanel("Biais", ui_biais),
-            tabPanel("Indépendance", ui_indep),
-            tabPanel("χ² d'un tableau", ui_khid),
-            tabPanel("Simulations", ui_sim1),
-            tabPanel("Pratique", ui_pq)
+            tabPanel("Proportion - Biais", ui_prop_biais),
+            tabPanel("Proportion - Simulation", ui_prop),
+            tabPanel("χ² - Biais", ui_biais),
+            tabPanel("χ² - Simulation", ui_sim1),
+            tabPanel("χ² - Pratique", ui_pq)
 )
 
 
