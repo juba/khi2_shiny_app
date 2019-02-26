@@ -2,3 +2,4 @@ deploy_ww.sh
 .Rproj.user
 *~
 *.Rproj
+.Rhistory
