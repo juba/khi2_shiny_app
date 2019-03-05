@@ -57,6 +57,14 @@ span.sim1_tab {width: 4em; display:inline-block; text-align: right;}
 
 "
 
+show_alert <- function(texte) {
+  column(12,
+    tags$div(class="alert alert-info alert-dismissable",
+      HTML('<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'),
+      HTML(texte)
+    )
+  )
+} 
 
 
 ## PROPORTION - BIAIS ----------------------------------------------------------
@@ -127,27 +135,34 @@ ui_prop <- fluidRow(
 
 ## KHI2 - BIAIS ----------------------------------------------------------
 
-row.names <- c("Cerastoculteur","Venericulteur","Pectiniculteur","Halioticulteur")
-col.names <- c("Potjevleesch","Kouign-amann", "Waterzooi")
-
-show_alert <- function(texte) {
-  column(12,
-         tags$div(class="alert alert-info alert-dismissable",
-                  HTML('<button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>'),
-                  HTML(texte)
-         )
-  )
-} 
 
 ui_biais <- fluidRow(
     headerPanel("χ² - Biais d'échantillonnage"),
     show_alert("Cette page simule la réalisation d'une enquête par questionnaire. On interroge une population au sujet de deux variables parfaitement indépendantes pour visualiser l'effet du biais d'échantillonnage."),
+    column(12,
+           wellPanel(
+             fluidRow(
+               column(4,
+                  HTML("<p><strong>Répartition du <tt>sexe</tt> dans la population :</strong></p>",
+                  HTML("<table class='data table table-condensed' style='width: auto;'>"),
+                  HTML("<tr><th>Homme</th><th>Femme</th></tr>"),
+                  HTML("<tr><td>45.0 %</td><td>55.0 %</td></tr>"),
+                  HTML("</table>"))),
+               column(4,
+                 HTML("<p><strong>Répartition de <tt>clso</tt> dans la population :</strong></p>"),
+                 HTML("<table class='data table table-condensed' style='width: 
+                 auto;'>"),
+                 HTML("<tr><th>Oui</th><th>Non</th><th>NSP</th></tr>"),
+                 HTML("<tr><td>46.8 %</td><td>51.9 %</td><td>1.4 %</td></tr>"),
+                 HTML("</table>")),
+               column(4,
+                 HTML("<p><strong>Tableau théorique sous l'hypothèse d'indépendance :</strong></p>"),
+                 tableOutput("biais_tabthq"))
+              )
+            )
+           ),
     column(3,
            wellPanel(
-             checkboxGroupInput("biais_rowmods", HTML("Modalités en lignes"), 
-                                choices=row.names, selected=c("Cerastoculteur","Venericulteur")),
-             checkboxGroupInput("biais_colmods", HTML("Modalités en colonnes"), 
-                                choices=col.names, selected=c("Potjevleesch","Kouign-amann")),
              numericInput("biais_ntot", HTML("Effectif total"), value=1000, min=1, max=1000000),
              actionButton("biais_rerun", "Générer", class="btn btn-success", icon=icon("refresh"))
            )),
@@ -156,7 +171,8 @@ ui_biais <- fluidRow(
                             tags$p("Cliquez sur \"Générer\"")),
            conditionalPanel(condition="input.biais_rerun>0",
                             tags$h4("Effectifs"), tableOutput("biais_tabEff"),
-                            tags$h4("Pourcentages", style="margin-top: 2em;"), tableOutput("biais_tabPourc"))
+                            tags$h4("Pourcentages ligne", style="margin-top: 2em;"), tableOutput("biais_tablprop"),
+                            tags$h4("Pourcentages colonne", style="margin-top: 2em;"), tableOutput("biais_tabcprop"))
          )
 )
 

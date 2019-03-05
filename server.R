@@ -5,6 +5,15 @@ library(purrr)
 library(tibble)
 library(stringr)
 
+data(hdv2003)
+## Recodage de d$clso
+hdv2003$clso <- as.character(hdv2003$clso)
+hdv2003$clso[hdv2003$clso == "Ne sait pas"] <- "NSP"
+## Réordonnancement de hdv2003$clso
+hdv2003$clso <- factor(hdv2003$clso, levels=c("Oui", "Non", "NSP"))
+tab <- table(hdv2003$sexe, hdv2003$clso)
+p_sexe_clso <- chisq.test(tab)$expected/sum(tab)
+
 function(input, output, session) {
   
   ## Fonction de tirage au sort pour proportions
@@ -153,37 +162,51 @@ function(input, output, session) {
   
   ## KHI2 - BIAIS -------------------------------------------------
   
+  
+
   biais_tab <- reactive({
     if (input$biais_rerun==0) return()
-    isolate({mr <- input$biais_rowmods
-             mc <- input$biais_colmods
-             nt <- input$biais_ntot})
-    nr <- length(mr)
-    nc <- length(mc)
-    nb <- nr*nc
-    vec <- factor(sample(1:nb, nt, replace=TRUE),levels=1:nb)
-    tab <- table(vec)
-    mat <- matrix(tab, nrow=nr, ncol=nc)
-    rownames(mat) <- mr
-    colnames(mat) <- mc
-    if (input$biais_rerun>1) Sys.sleep(1)
+    probas <- as.vector(p_sexe_clso)
+    values <- sample(1:6, input$biais_ntot, replace = TRUE, prob = probas)
+    tab <- table(values)
+    for (i in as.character(1:6)) {
+      if (!(i %in% names(tab))) {
+        tab[[i]] <- 0
+      }
+    }
+    tab <- tab[order(names(tab))]
+    mat <- matrix(tab, nrow=2, ncol=3)
+    rownames(mat) <- rownames(p_sexe_clso)
+    colnames(mat) <- colnames(p_sexe_clso)
     as.table(mat)
   })
-  
   
   output$biais_tabEff <- renderTable({
     if (input$biais_rerun==0) return()
     out <- biais_tab()
     as.data.frame.matrix(out)
-  }, rownames = TRUE)
+  }, rownames = TRUE, digits = 0)
   
-  output$biais_tabPourc <- renderTable({
+  output$biais_tablprop <- renderTable({
     if (input$biais_rerun==0) return()
-    out <- prop.table(biais_tab())*100
+    out <- lprop(biais_tab(), drop = FALSE)
+    out <- out[-nrow(out),]
     out[] <- sprintf(out, fmt = "%.1f %%")
     as.data.frame.matrix(out)
   }, rownames = TRUE, digits = 1)
 
+  output$biais_tabcprop <- renderTable({
+    if (input$biais_rerun==0) return()
+    out <- cprop(biais_tab(), drop = TRUE)
+    out <- out[,-ncol(out)]
+    out[] <- sprintf(out, fmt = "%.1f %%")
+    as.data.frame.matrix(out)
+  }, rownames = TRUE, digits = 1)
+
+  output$biais_tabthq <- renderTable({
+    if (is.na(input$biais_ntot)) return(NULL)
+    p_sexe_clso * input$biais_ntot
+  }, rownames = TRUE, digits = 1)
      
 ## KHI2 - SIMULATIONS DU KHI2 --------------------------------
 
