@@ -324,7 +324,7 @@ function(input, output, session) {
     tmp <- sim1_val()
     nbsup <- sum(tmp > refval)
     propsup <- round(nbsup/length(tmp)*100, 2)
-    paste0("Le χ² de notre tableau d'origine valait ", refval, ".<br />",
+    paste0("Le χ² de notre tableau observé vaut ", refval, ".<br />",
            "Nombre de valeurs simulées obtenues sup&eacute;rieures &agrave; ",
            refval, " : <strong>", nbsup, "</strong>",
            "<br />", "Soit <strong>", propsup, " %</strong> des valeurs simul&eacute;es obtenues.")
@@ -333,7 +333,7 @@ function(input, output, session) {
   output$sim1_pval <- renderText({
     if (!("Test" %in% input$sim1_opts)) return("")
     tab <- sim1_tab()
-    paste0("Le <i>p</i> du test du χ² sur le tableau d'origine vaut : <strong>", 
+    paste0("Le <i>p</i> du test du χ² sur le tableau observé vaut : <strong>", 
            round(chisq.test(tab)$p.value,5), "</strong>.")
   })
 
