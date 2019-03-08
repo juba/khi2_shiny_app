@@ -170,9 +170,12 @@ ui_biais <- fluidRow(
            conditionalPanel(condition="input.biais_rerun==0",
                             tags$p("Cliquez sur \"Générer\"")),
            conditionalPanel(condition="input.biais_rerun>0",
-                            tags$h4("Effectifs"), tableOutput("biais_tabEff"),
-                            tags$h4("Pourcentages ligne", style="margin-top: 2em;"), tableOutput("biais_tablprop"),
-                            tags$h4("Pourcentages colonne", style="margin-top: 2em;"), tableOutput("biais_tabcprop"))
+              tabsetPanel(
+                tabPanel("Effectifs", tags$h4("Effectifs"), tableOutput("biais_tabEff")),
+                tabPanel("Pourcentages ligne", tags$h4("Pourcentages ligne"), tableOutput("biais_tablprop")),
+                tabPanel("Pourcentages colonne", tags$h4("Pourcentages colonne"), tableOutput("biais_tabcprop"))
+              )
+           )
          )
 )
 

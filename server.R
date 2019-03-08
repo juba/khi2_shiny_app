@@ -160,12 +160,12 @@ function(input, output, session) {
     HTML(out)
   })
   
+  
   ## KHI2 - BIAIS -------------------------------------------------
   
-  
-
   biais_tab <- reactive({
     if (input$biais_rerun==0) return()
+    if (is.na(input$biais_ntot)) return()
     probas <- as.vector(p_sexe_clso)
     values <- sample(1:6, input$biais_ntot, replace = TRUE, prob = probas)
     tab <- table(values)
@@ -183,12 +183,14 @@ function(input, output, session) {
   
   output$biais_tabEff <- renderTable({
     if (input$biais_rerun==0) return()
+    if (is.na(input$biais_ntot)) return()
     out <- biais_tab()
     as.data.frame.matrix(out)
   }, rownames = TRUE, digits = 0)
   
   output$biais_tablprop <- renderTable({
     if (input$biais_rerun==0) return()
+    if (is.na(input$biais_ntot)) return()
     out <- lprop(biais_tab(), drop = FALSE)
     out <- out[-nrow(out),]
     out[] <- sprintf(out, fmt = "%.1f %%")
@@ -197,6 +199,7 @@ function(input, output, session) {
 
   output$biais_tabcprop <- renderTable({
     if (input$biais_rerun==0) return()
+    if (is.na(input$biais_ntot)) return()
     out <- cprop(biais_tab(), drop = TRUE)
     out <- out[,-ncol(out)]
     out[] <- sprintf(out, fmt = "%.1f %%")
@@ -207,6 +210,7 @@ function(input, output, session) {
     if (is.na(input$biais_ntot)) return(NULL)
     p_sexe_clso * input$biais_ntot
   }, rownames = TRUE, digits = 1)
+  
      
 ## KHI2 - SIMULATIONS DU KHI2 --------------------------------
 
