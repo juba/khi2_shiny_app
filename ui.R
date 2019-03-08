@@ -109,6 +109,7 @@ ui_prop <- fluidRow(
         checkboxInput("prop_fix_x", "Fixer l'axe horizontal à 0-100", value = FALSE),
         numericInput("prop_ech", "Pourcentage obtenu dans notre échantillon",
           min = 0, max = 100, step = 1, value = 53),
+        checkboxInput("prop_show_value", "Surligner la valeur dans l'échantillon", value = FALSE),
         checkboxInput("prop_show_zones", "Surligner les valeurs plus extrêmes", value = FALSE),
         checkboxInput("prop_show_test", "Afficher test", value = FALSE),
         checkboxInput("prop_show_curve", "Afficher courbe", value = FALSE)),  
@@ -163,7 +164,7 @@ ui_biais <- fluidRow(
            ),
     column(3,
            wellPanel(
-             numericInput("biais_ntot", HTML("Effectif total"), value=1000, min=1, max=1000000),
+             numericInput("biais_ntot", HTML("Nombre de personnes interrogées"), value=1000, min=1, max=1000000),
              actionButton("biais_rerun", "Générer", class="btn btn-success", icon=icon("refresh"))
            )),
     column(8,
@@ -204,7 +205,7 @@ ui_sim1 <- list(fluidRow(
            numericInput("sim1_nb", "Nombre de simulations", value=1, min=1, max=100000),
            conditionalPanel("input.sim1_nb>=100",
               checkboxGroupInput("sim1_opts", "Afficher", 
-                                 choices=c("Histogramme", "Valeurs plus extrêmes", "Test", "Courbe"))),
+                                 choices=c("Histogramme", "Valeur obtenue", "Valeurs plus extrêmes", "Test", "Courbe"))),
            actionButton("sim1_run", "Générer", class="btn btn-success", icon=icon("refresh"))
          )),
   column(8,

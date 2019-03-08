@@ -106,6 +106,7 @@ function(input, output, session) {
     pourc_range[1] <- pourc_range[1] - 1
     pourc_range[2] <- pourc_range[2] + 1
     binwidth <- 1
+    breaks <- waiver()
     if (input$prop_size < 100) binwidth <- 5
     if (input$prop_size < 20) binwidth <- 10
     if (input$prop_show_curve) {
@@ -117,9 +118,10 @@ function(input, output, session) {
           geom_histogram(aes(x=pourc), binwidth = binwidth) +
           scale_y_continuous("Nombre de tirages")
     }
-    g <- g + xlab("Pourcentage de femmes")
-    if (input$prop_fix_x) {
-      g <- g + scale_x_continuous("Pourcentage de femmes", limits = c(0,100))
+    if (!is.na(input$prop_ech) && input$prop_ech >= 0 && input$prop_ech <= 100 && input$prop_show_value) {
+      g <- g + 
+        geom_vline(xintercept = input$prop_ech, color = "blue", size = 0.5, linetype = 2)
+      breaks <- c(scales::cbreaks(pourc_range)$breaks, input$prop_ech)
     }
     if (!is.na(input$prop_ech) && input$prop_ech >= 0 && input$prop_ech <= 100 && input$prop_show_zones) {
       gap <- abs(input$prop_value - input$prop_ech)
@@ -129,6 +131,7 @@ function(input, output, session) {
         geom_vline(xintercept = c(x1, x2), color = "red", size = 0.5, linetype = 2) +
         annotation_raster(rgb(1,0,0,0.2), xmin = -Inf, xmax = x1, ymin = -Inf, ymax = Inf) +
         annotation_raster(rgb(1,0,0,0.2), xmin = x2, xmax = Inf, ymin = -Inf, ymax = Inf)
+      breaks <- c(scales::cbreaks(pourc_range)$breaks, x1, x2)
     }
     if (input$prop_show_curve) {
       range <- pourc_range
@@ -137,6 +140,9 @@ function(input, output, session) {
       g <- g +
         geom_line(stat = "function", fun = function(x) dnorm(x, mean = prop, sd = sd), color = "blue")
     }
+    g <- g + xlab("Pourcentage de femmes")
+    limits <- if (input$prop_fix_x) c(0, 100) else c(NA, NA)
+    g <- g + scale_x_continuous("Pourcentage de femmes", limits = limits, breaks = breaks)
     g
   })
   
@@ -148,15 +154,15 @@ function(input, output, session) {
     nb <- sum(tirages() <= x1 | tirages() >= x2)
     pourc <- round(nb / input$prop_sim * 100, 1)
     out <- paste0("<p>Nombre de tirages pour lesquels le pourcentage de femmes est inférieur à ", x1, " ou supérieur à ", x2, " : <strong>", nb, "</strong><br>")
-    out <- paste0(out, "Soit en pourcentage des tirages effectués : <strong>", pourc, "%</strong></p>")
+    out <- paste0(out, "Soit en pourcentage des tirages effectués : <strong>", pourc, " %</strong></p>")
     HTML(out)
   })
 
   ## Affichage test proportions
   output$prop_p <- renderUI({
-    p_test <- prop.test(input$prop_ech / 100 * input$prop_size, input$prop_size, input$prop_value / 100)$p.value
+    p_test <- binom.test(input$prop_ech / 100 * input$prop_size, input$prop_size, input$prop_value / 100)$p.value
     p_test <- signif(p_test, 3)
-    out <- paste0("<p>Résultat d'un test de proportion : <strong>p = ", p_test, "</strong></p>")
+    out <- paste0("<p>Résultat d'un test de proportion : <strong>p = ", p_test, " (", p_test * 100," %)</strong></p>")
     HTML(out)
   })
   
@@ -283,33 +289,33 @@ function(input, output, session) {
   })
 
   output$sim1_hist <- renderPlot({
-    if ("Histogramme" %in% input$sim1_opts) {
-      tmp <- sim1_val()
-      if ("Courbe" %in% input$sim1_opts) {
-          g <- ggplot(data=data.frame(tmp=tmp), aes(x=tmp)) +
-              geom_histogram(binwidth=1, aes(y=..density..)) + 
-              scale_y_continuous("Proportion de simulations") +
-              geom_line(stat="function", fun=function(x) dchisq(x, df=2), col="blue")
-      }
-      else {
-          g <- qplot(tmp, geom="histogram", binwidth=1) + 
-                  scale_y_continuous("Nombre de simulations")
-      }
-      if ("Valeurs plus extrêmes" %in% input$sim1_opts) {
-          g <- g + 
-            geom_vline(xintercept = 7.06, color = "red", linetype = 2) +
-            annotation_raster(rgb(1,0,0,0.2), xmin = 7.06, xmax = +Inf, ymin = -Inf, ymax = Inf) +
-            scale_x_continuous("Valeur du χ²", breaks = c(0,5,7.06,10,15,20), limits = c(0,20), expand = c(0, 0))
-      } 
-      else {
-         g <- g +
-           scale_x_continuous("Valeur du χ²", limits = c(0,20), expand = c(0, 0))           
-      }
-      g
+    if (!("Histogramme" %in% input$sim1_opts)) return(NULL)
+    tmp <- data.frame(x=sim1_val())
+    if ("Courbe" %in% input$sim1_opts) {
+        g <- ggplot(tmp, aes(x=x)) +
+            geom_histogram(binwidth=1, aes(y=..density..)) + 
+            scale_y_continuous("Proportion de simulations") +
+            geom_line(stat="function", fun=function(x) dchisq(x, df=2), col="blue")
     }
     else {
-      plot.new()
+        g <- ggplot(tmp) +
+            geom_histogram(aes(x = x), binwidth=1) +
+            scale_y_continuous("Nombre de simulations")
     }
+    g <- g +
+         scale_x_continuous("Valeur du χ²", limits = c(0,20), expand = c(0, 0))  
+    if ("Valeur obtenue" %in% input$sim1_opts) {
+        g <- g + 
+          geom_vline(xintercept = 7.06, color = "blue", linetype = 2) +
+          scale_x_continuous("Valeur du χ²", breaks = c(0,5,7.06,10,15,20), limits = c(0,20), expand = c(0, 0))
+    }
+    if ("Valeurs plus extrêmes" %in% input$sim1_opts) {
+        g <- g + 
+          geom_vline(xintercept = 7.06, color = "red", linetype = 2) +
+          annotation_raster(rgb(1,0,0,0.2), xmin = 7.06, xmax = +Inf, ymin = -Inf, ymax = Inf) +
+          scale_x_continuous("Valeur du χ²", breaks = c(0,5,7.06,10,15,20), limits = c(0,20), expand = c(0, 0))
+    } 
+    g
   })
 
   output$sim1_comp <- renderText({
