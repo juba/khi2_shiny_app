@@ -199,7 +199,7 @@ function(input, output, session) {
     if (is.na(input$biais_ntot)) return()
     out <- lprop(biais_tab(), drop = FALSE)
     out <- out[-nrow(out),]
-    out[] <- sprintf(out, fmt = "%.1f %%")
+    out[] <- sprintf(out, fmt = "%.0f %%")
     as.data.frame.matrix(out)
   }, rownames = TRUE, digits = 1)
 
@@ -208,7 +208,7 @@ function(input, output, session) {
     if (is.na(input$biais_ntot)) return()
     out <- cprop(biais_tab(), drop = TRUE)
     out <- out[,-ncol(out)]
-    out[] <- sprintf(out, fmt = "%.1f %%")
+    out[] <- sprintf(out, fmt = "%.0f %%")
     as.data.frame.matrix(out)
   }, rownames = TRUE, digits = 1)
 
