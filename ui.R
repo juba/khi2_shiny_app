@@ -155,10 +155,7 @@ ui_biais <- fluidRow(
                  auto;'>"),
                  HTML("<tr><td>Oui</td><td>Non</td><td>NSP</td></tr>"),
                  HTML("<tr><td>47 %</td><td>52 %</td><td>1 %</td></tr>"),
-                 HTML("</table>")),
-               column(4,
-                 HTML("<p><strong>Tableau théorique sous l'hypothèse d'indépendance :</strong></p>"),
-                 tableOutput("biais_tabthq"))
+                 HTML("</table>"))
               )
             )
            ),
