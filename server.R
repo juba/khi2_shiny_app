@@ -15,7 +15,7 @@ tab <- table(hdv2003$sexe, hdv2003$clso)
 p_sexe_clso <- chisq.test(tab)$expected/sum(tab)
 
 function(input, output, session) {
-  
+
   ## Fonction de tirage au sort pour proportions
   prop_tirage <- function(size, prob_value, values = TRUE) {
     probs <- c(1 - (prob_value / 100), prob_value / 100)
@@ -32,13 +32,13 @@ function(input, output, session) {
     if (values) return(list(tirage = tirage, pourc = pourc, nb = nb))
     return(pourc)
   }
-  
+
   ## PROPORTION - BIAIS ---------------------------------------------
-  
+
   ## Simulation d'un tirage
   output$prop_biais_sim <- renderUI({
     if (input$prop_biais_rerun == 0) return(HTML("Cliquez sur <em>Générer</em>"))
-    if (input$prop_biais_size < 1) return(HTML("Taille de l'échantillon trop petite."))
+    if (is.na(input$prop_biais_size) || input$prop_biais_size < 1) return(HTML("Taille de l'échantillon trop petite."))
     isolate({
       size <- input$prop_biais_size
       value <- input$prop_biais_value
@@ -53,18 +53,19 @@ function(input, output, session) {
     out <- paste0(out, "<h4>Échantillon obtenu</h4>")
     out <- paste0(out, "<div class='echantillon'>", values, "</div>")
     out <- paste0(out, "<p style='text-align: center; margin-top: 2em; font-size: 130%;'>Pourcentage de femmes : <strong>", res$pourc, "%</strong></p>")
-    
+
     HTML(out)
   })
-  
-  
+
+
   ## PROPORTION - SIMULATION -------------------------------------------------
-  
-  
+
+
   ## Simulation de proportions entre 1 et 3 répétitions
   output$prop_sim3 <- renderUI({
     input$prop_rerun
-    if (is.na(input$prop_sim)) return(NULL)
+    if (is.na(input$prop_size) || input$prop_size < 2) return(NULL)
+    if (is.na(input$prop_sim) || input$prop_sim <= 0) return(NULL)
     if (input$prop_sim > 3) return(NULL)
     out <- ""
     for (i in 1:input$prop_sim) {
@@ -83,7 +84,7 @@ function(input, output, session) {
     input$prop_rerun
     replicate(input$prop_sim, prop_tirage(input$prop_size, input$prop_value, values = FALSE))
   })
-  
+
   ## Simulation de proportions pour plus de 10 répétitions
   output$prop_sim <- renderUI({
     input$prop_rerun
@@ -99,7 +100,7 @@ function(input, output, session) {
     out <- paste0(out, "<div class='echantillon echantillon-small'>", pourcentages, "</div>")
     HTML(out)
   })
-  
+
   ## Histogramme des proportions obtenues
   output$prop_plot <- renderPlot({
     pourcentages <- tibble(pourc = tirages())
@@ -120,7 +121,7 @@ function(input, output, session) {
           scale_y_continuous("Nombre de tirages")
     }
     if (!is.na(input$prop_ech) && input$prop_ech >= 0 && input$prop_ech <= 100 && input$prop_show_value) {
-      g <- g + 
+      g <- g +
         geom_vline(xintercept = input$prop_ech, color = "blue", size = 0.5, linetype = 2)
       breaks <- c(scales::cbreaks(pourc_range)$breaks, input$prop_ech)
     }
@@ -146,9 +147,10 @@ function(input, output, session) {
     g <- g + scale_x_continuous("Pourcentage de femmes", limits = limits, breaks = breaks)
     g
   })
-  
+
   ## Comparaison tirages et échantillon
   output$prop_extr_values <- renderUI({
+    if (is.na(input$prop_size)) return(NULL)
     gap <- abs(input$prop_value - input$prop_ech)
     x1 <- input$prop_value - gap
     x2 <- input$prop_value + gap
@@ -161,15 +163,16 @@ function(input, output, session) {
 
   ## Affichage test proportions
   output$prop_p <- renderUI({
-    p_test <- binom.test(input$prop_ech / 100 * input$prop_size, input$prop_size, input$prop_value / 100)$p.value
+    if (is.na(input$prop_size)) return(NULL)
+    p_test <- binom.test(round(input$prop_ech / 100 * input$prop_size), input$prop_size, input$prop_value / 100)$p.value
     p_test <- signif(p_test, 3)
     out <- paste0("<p>Résultat d'un test de proportion : <strong>p = ", p_test, " (", p_test * 100," %)</strong></p>")
     HTML(out)
   })
-  
-  
+
+
   ## KHI2 - BIAIS -------------------------------------------------
-  
+
   biais_tab <- reactive({
     if (input$biais_rerun==0) return()
     if (is.na(input$biais_ntot)) return()
@@ -187,14 +190,14 @@ function(input, output, session) {
     colnames(mat) <- colnames(p_sexe_clso)
     as.table(mat)
   })
-  
+
   output$biais_tabEff <- renderTable({
     if (input$biais_rerun==0) return()
     if (is.na(input$biais_ntot)) return()
     out <- biais_tab()
     as.data.frame.matrix(out)
   }, rownames = TRUE, digits = 0)
-  
+
   output$biais_tablprop <- renderTable({
     if (input$biais_rerun==0) return()
     if (is.na(input$biais_ntot)) return()
@@ -217,8 +220,8 @@ function(input, output, session) {
     if (is.na(input$biais_ntot)) return(NULL)
     p_sexe_clso * input$biais_ntot
   }, rownames = TRUE, digits = 1)
-  
-     
+
+
 ## KHI2 - SIMULATIONS DU KHI2 --------------------------------
 
   sim1_tab <- reactive({
@@ -246,12 +249,12 @@ function(input, output, session) {
     })
     result
   })
-  
+
   output$sim1_thq <- renderTable({
     tab <- sim1_tab()
     tab <- round(chisq.test(tab)$expected,1)
     as.data.frame.matrix(tab)
-  }, rownames = TRUE, digits=1)  
+  }, rownames = TRUE, digits=1)
 
   output$sim1_obs1 <- renderTable({as.data.frame.matrix(sim1_tabalea()[[1]])}, rownames = TRUE)
   output$sim1_khid1 <- renderText({paste("χ² =", round(chisq.test(sim1_tabalea()[[1]])$statistic,2))})
@@ -261,7 +264,7 @@ function(input, output, session) {
   output$sim1_khid3 <- renderText({paste("χ² =", round(chisq.test(sim1_tabalea()[[3]])$statistic,2))})
   output$sim1_obs4 <- renderTable({as.data.frame.matrix(sim1_tabalea()[[4]])}, rownames = TRUE)
   output$sim1_khid4 <- renderText({paste("χ² =", round(chisq.test(sim1_tabalea()[[4]])$statistic,2))})
-  
+
   sim1_val <- reactive({
     if (input$sim1_nb>100000) return()
     require(stats)
@@ -273,7 +276,7 @@ function(input, output, session) {
     dimnames(E) <- dimnames(x)
     tmp <- .Call(stats:::C_chisq_sim, sr, sc, input$sim1_nb, E, PACKAGE="stats")
   })
-  
+
   output$sim1_valeurs <- renderText({
     if (input$sim1_nb<5) return()
     tmp <- sim1_val()
@@ -282,7 +285,7 @@ function(input, output, session) {
     #PVAL <- (1 + sum(tmp >= almost.1 * STATISTIC))/(B + 1)
     paste(c(round(tmp,2)), collapse=", ")
   })
-  
+
   output$sim1_valeurs_head <- renderText({
     if (input$sim1_nb<5) return()
     tmp <- sim1_val()
@@ -294,7 +297,7 @@ function(input, output, session) {
     tmp <- data.frame(x=sim1_val())
     if ("Courbe" %in% input$sim1_opts) {
         g <- ggplot(tmp, aes(x=x)) +
-            geom_histogram(binwidth=1, aes(y=..density..)) + 
+            geom_histogram(binwidth=1, aes(y=..density..)) +
             scale_y_continuous("Proportion de simulations") +
             geom_line(stat="function", fun=function(x) dchisq(x, df=2), col="blue")
     }
@@ -304,18 +307,18 @@ function(input, output, session) {
             scale_y_continuous("Nombre de simulations")
     }
     g <- g +
-         scale_x_continuous("Valeur du χ²", limits = c(0,20), expand = c(0, 0))  
+         scale_x_continuous("Valeur du χ²", limits = c(0,20), expand = c(0, 0))
     if ("Valeur obtenue" %in% input$sim1_opts) {
-        g <- g + 
+        g <- g +
           geom_vline(xintercept = 7.06, color = "blue", linetype = 2) +
           scale_x_continuous("Valeur du χ²", breaks = c(0,5,7.06,10,15,20), limits = c(0,20), expand = c(0, 0))
     }
     if ("Valeurs plus extrêmes" %in% input$sim1_opts) {
-        g <- g + 
+        g <- g +
           geom_vline(xintercept = 7.06, color = "red", linetype = 2) +
           annotation_raster(rgb(1,0,0,0.2), xmin = 7.06, xmax = +Inf, ymin = -Inf, ymax = Inf) +
           scale_x_continuous("Valeur du χ²", breaks = c(0,5,7.06,10,15,20), limits = c(0,20), expand = c(0, 0))
-    } 
+    }
     g
   })
 
@@ -330,16 +333,16 @@ function(input, output, session) {
            refval, " : <strong>", nbsup, "</strong>",
            "<br />", "Soit <strong>", propsup, " %</strong> des valeurs simul&eacute;es obtenues.")
   })
-  
+
   output$sim1_pval <- renderText({
     if (!("Test" %in% input$sim1_opts)) return("")
     tab <- sim1_tab()
-    paste0("Le <i>p</i> du test du χ² sur le tableau observé vaut : <strong>", 
+    paste0("Le <i>p</i> du test du χ² sur le tableau observé vaut : <strong>",
            round(chisq.test(tab)$p.value,5), "</strong>.")
   })
 
 ## KHI2 - EXERCICES D'APPLICATION SUR HDV 2003 ------------------------
-  
+
   pq_tab <- reactive({
       if (input$pq_varl=="---" || input$pq_varc=="---") return(NULL)
       tmp <- d
@@ -385,7 +388,7 @@ function(input, output, session) {
       tmp <- chisq.test(tab)
       paste0("χ² du tableau : <strong>", round(tmp$statistic,2), "</strong><br />",
              "Degrés de libertés : <strong>", prod(dim(tab)-1),"</strong><br />",
-             "p = <strong>", round(tmp$p.value,5)) 
+             "p = <strong>", round(tmp$p.value,5))
   })
 
   observe({
@@ -395,6 +398,6 @@ function(input, output, session) {
       updateSelectInput(session, "pq_varl", "Variable en ligne", choices=c("---", d.vars), selected=varc)
       updateSelectInput(session, "pq_varc", "Variable en colonne", choices=c("---", d.vars), selected=varl)
   })
-  
+
 }
 
