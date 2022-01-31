@@ -10,16 +10,16 @@ data(hdv2003)
 hdv2003$clso <- as.character(hdv2003$clso)
 hdv2003$clso[hdv2003$clso == "Ne sait pas"] <- "NSP"
 ## Réordonnancement de hdv2003$clso
-hdv2003$clso <- factor(hdv2003$clso, levels=c("Oui", "Non", "NSP"))
+hdv2003$clso <- factor(hdv2003$clso, levels = c("Oui", "Non", "NSP"))
 tab <- table(hdv2003$sexe, hdv2003$clso)
-p_sexe_clso <- chisq.test(tab)$expected/sum(tab)
+p_sexe_clso <- chisq.test(tab)$expected / sum(tab)
 
 function(input, output, session) {
 
   ## Fonction de tirage au sort pour proportions
   prop_tirage <- function(size, prob_value, values = TRUE) {
     probs <- c(1 - (prob_value / 100), prob_value / 100)
-    tirage <- sample(c("👨", "👩"), size = size, replace =TRUE, prob = probs)
+    tirage <- sample(c("👨", "👩"), size = size, replace = TRUE, prob = probs)
     tab <- table(tirage)
     if (!("👩" %in% names(tab))) {
       nb <- 0
@@ -278,18 +278,18 @@ function(input, output, session) {
   })
 
   output$sim1_valeurs <- renderText({
-    if (input$sim1_nb<5) return()
+    if (input$sim1_nb < 5) return()
     tmp <- sim1_val()
     #STATISTIC <- sum(sort((x - E)^2/E, decreasing = TRUE))
     #PARAMETER <- NA
     #PVAL <- (1 + sum(tmp >= almost.1 * STATISTIC))/(B + 1)
-    paste(c(round(tmp,2)), collapse=", ")
+    paste(c(round(tmp, 2)), collapse = ", ")
   })
 
   output$sim1_valeurs_head <- renderText({
-    if (input$sim1_nb<5) return()
+    if (input$sim1_nb < 5) return()
     tmp <- sim1_val()
-    paste(c(round(head(tmp,10),2)), collapse=", ")
+    paste(c(round(head(tmp, 10), 2)), collapse = ", ")
   })
 
   output$sim1_hist <- renderPlot({
