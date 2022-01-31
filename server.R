@@ -37,7 +37,8 @@ function(input, output, session) {
   
   ## Simulation d'un tirage
   output$prop_biais_sim <- renderUI({
-    if (input$prop_biais_rerun==0) return(HTML("Cliquez sur <em>Générer</em>"))
+    if (input$prop_biais_rerun == 0) return(HTML("Cliquez sur <em>Générer</em>"))
+    if (input$prop_biais_size < 1) return(HTML("Taille de l'échantillon trop petite."))
     isolate({
       size <- input$prop_biais_size
       value <- input$prop_biais_value

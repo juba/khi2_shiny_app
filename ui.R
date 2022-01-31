@@ -64,7 +64,7 @@ show_alert <- function(texte) {
       HTML(texte)
     )
   )
-} 
+}
 
 
 ## PROPORTION - BIAIS ----------------------------------------------------------
@@ -73,7 +73,7 @@ ui_prop_biais <- fluidRow(
   headerPanel("Estimation d'une proportion - Biais d'échantillonnage"),
   column(3,
     wellPanel(
-      sliderInput("prop_biais_value", 
+      sliderInput("prop_biais_value",
         "Proportion de femmes dans la population",
         min = 0, max = 100, step = 1, value = 50, round = TRUE),
       numericInput("prop_biais_size",
@@ -83,9 +83,9 @@ ui_prop_biais <- fluidRow(
     )
   ),
   column(8,
-    uiOutput("prop_biais_sim")  
+    uiOutput("prop_biais_sim")
   )
-  
+
 )
 
 ## PROPORTION - SIMULATIONS ----------------------------------------------------
@@ -94,13 +94,13 @@ ui_prop <- fluidRow(
   headerPanel("Estimation d'une proportion - Simulations"),
   column(3,
     wellPanel(
-      sliderInput("prop_value", 
+      sliderInput("prop_value",
         "Proportion de femmes dans la population",
         min = 0, max = 100, step = 1, value = 50, round = TRUE),
       numericInput("prop_size",
         "Taille de l'échantillon",
         min = 2, max = 10000, value = 200),
-      numericInput("prop_sim", 
+      numericInput("prop_sim",
         "Nombre de tirages",
         min = 1, max = 1000, value = 1),
       conditionalPanel("input.prop_sim > 10",
@@ -112,7 +112,7 @@ ui_prop <- fluidRow(
         checkboxInput("prop_show_value", "Surligner la valeur dans l'échantillon", value = FALSE),
         checkboxInput("prop_show_zones", "Surligner les valeurs plus extrêmes", value = FALSE),
         checkboxInput("prop_show_test", "Afficher test", value = FALSE),
-        checkboxInput("prop_show_curve", "Afficher courbe", value = FALSE)),  
+        checkboxInput("prop_show_curve", "Afficher courbe", value = FALSE)),
       actionButton("prop_rerun", "Générer", class = "btn btn-success", icon = icon("refresh"))
     )),
   column(8,
@@ -151,7 +151,7 @@ ui_biais <- fluidRow(
                   HTML("</table>"))),
                column(4,
                  HTML("<p><strong>Répartition de <tt>clso</tt> dans la population :</strong></p>"),
-                 HTML("<table class='data table table-condensed' style='width: 
+                 HTML("<table class='data table table-condensed' style='width:
                  auto;'>"),
                  HTML("<tr><td>Oui</td><td>Non</td><td>NSP</td></tr>"),
                  HTML("<tr><td>47 %</td><td>52 %</td><td>1 %</td></tr>"),
@@ -201,7 +201,7 @@ ui_sim1 <- list(fluidRow(
          wellPanel(
            numericInput("sim1_nb", "Nombre de simulations", value=1, min=1, max=100000),
            conditionalPanel("input.sim1_nb>=100",
-              checkboxGroupInput("sim1_opts", "Afficher", 
+              checkboxGroupInput("sim1_opts", "Afficher",
                                  choices=c("Histogramme", "Valeur obtenue", "Valeurs plus extrêmes", "Test", "Courbe"))),
            actionButton("sim1_run", "Générer", class="btn btn-success", icon=icon("refresh"))
          )),
@@ -212,42 +212,42 @@ ui_sim1 <- list(fluidRow(
                           tags$h3("Effectifs observés simulés"),
                           conditionalPanel("input.sim1_nb>=1",
                             fluidRow(
-                              column(6, tableOutput("sim1_obs1")),         
-                              column(6, tags$div(style="font-size: 2em;", 
+                              column(6, tableOutput("sim1_obs1")),
+                              column(6, tags$div(style="font-size: 2em;",
                                                  textOutput("sim1_khid1"))))),
                           conditionalPanel("input.sim1_nb>=2",
                             fluidRow(
-                              column(6, tableOutput("sim1_obs2")),         
-                              column(6, tags$div(style="font-size: 2em;", 
+                              column(6, tableOutput("sim1_obs2")),
+                              column(6, tags$div(style="font-size: 2em;",
                                                  textOutput("sim1_khid2"))))),
                           conditionalPanel("input.sim1_nb>=3",
                             fluidRow(
-                              column(6, tableOutput("sim1_obs3")),         
-                              column(6, tags$div(style="font-size: 2em;", 
+                              column(6, tableOutput("sim1_obs3")),
+                              column(6, tags$div(style="font-size: 2em;",
                                                 textOutput("sim1_khid3"))))),
                           conditionalPanel("input.sim1_nb>=4",
                             fluidRow(
-                              column(6, tableOutput("sim1_obs4")),         
-                              column(6, tags$div(style="font-size: 2em;", 
+                              column(6, tableOutput("sim1_obs4")),
+                              column(6, tags$div(style="font-size: 2em;",
                                                  textOutput("sim1_khid4")))))
          ),
          conditionalPanel("input.sim1_nb>=5 && input.sim1_nb<100",
                           tags$h3("Valeurs obtenues par simulation"),
                           tags$div("Valeurs du χ² obtenues : ",
                                   textOutput("sim1_valeurs", inline=TRUE))
-         ),                  
+         ),
          conditionalPanel("input.sim1_nb>=100",
                           tags$h3("Valeurs obtenues par simulation"),
-                          tags$p("Dix dernières valeurs du χ² obtenues : ", 
+                          tags$p("Dix dernières valeurs du χ² obtenues : ",
                                  textOutput("sim1_valeurs_head", inline=TRUE), "(...)"),
                           plotOutput("sim1_hist"),
                           htmlOutput("sim1_comp"),
                           htmlOutput("sim1_pval")
-                          
-         )                  
+
+         )
   )
   )
-  
+
 
 ## EXERCICES D'APPLICATION SUR HDV 2003 ------------------------------------
 
@@ -278,11 +278,11 @@ ui_pq <- fluidRow(
                         tableOutput("pq_resid"),
                         plotOutput("pq_mosaic",height=600)
                         ),
-               tabPanel("À propos", 
+               tabPanel("À propos",
                         hdv_description,
                         hdv_listevars)
     )
-    
+
 ))
 
 
