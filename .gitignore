@@ -4,3 +4,4 @@ deploy_ww.sh
 *.Rproj
 .Rhistory
 sync_humanum.sh
+docker/
